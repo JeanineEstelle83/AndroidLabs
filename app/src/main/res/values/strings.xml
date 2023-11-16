@@ -1,7 +1,12 @@
 <resources>
     <string name="app_name">AndroidLabs</string>
-    <string name="hello_world">Hello World</string>
-    <string name="button_text">I\'m a button</string>
+    <string name="hello_world">Hello world</string>
+    <string name="love">I love Android</string>
+    <string name="button_text">I\'m a button </string>
+    <string name="on">Switch on/off </string>
+    <string name="press">Press me</string>
+    <string name="check">Check this out!</string>
+    <string name="toast_message">Label has been updated</string>
 
 
 </resources>

@@ -4,5 +4,10 @@
 <resources>
     <string name="hello_world">Bonjour le monde</string>
     <string name="button_text">Je suis un bouton</string>
+    <string name="love">J\'aime android</string>
+    <string name="on">allumez/eteindre</string>
+    <string name="press">Appuyez-moi</string>
+    <string name="check">Cocher ici</string>
+    <string name="toast_message"> L\'étiquette a été mise à jour </string>
 
 </resources>
