@@ -1,56 +1,66 @@
 package com.example.androidlabs;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
+import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import com.google.android.material.snackbar.Snackbar;
 
 public class MainActivity extends AppCompatActivity {
-
+    private EditText editText;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.actitvity_main_grid);
+        setContentView(R.layout.activity_main);
 
+         editText = findViewById(R.id.editText);
 
-        CheckBox checkBox = findViewById(R.id.checkBox);
-        checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        Button nextButton = findViewById(R.id.button);
+        nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                // Show a Snackbar with the checkbox state and an "Undo" action
-                String checkboxState = isChecked ? "on" : "off";
-                String snackbarMessage = "The checkbox is now " + checkboxState;
+            public void onClick(View v) {
+                String userInput = editText.getText().toString();
 
-                Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), snackbarMessage, Snackbar.LENGTH_LONG)
-                        .setAction("Undo", new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                // Perform "Undo" action: set the checkbox back to its original state
-                                checkBox.setChecked(!isChecked);
-                            }
-                        });
-
-                // Show the Snackbar
-                snackbar.show();
+                Intent intent = new Intent(MainActivity.this, NameActivity.class);
+                intent.putExtra("userName", userInput);
+                startActivityForResult(intent, 1);
             }
         });
-    }
-    public void onClickBtn(View view) {
-        EditText editText = findViewById(R.id.etLove);
-        TextView textView = findViewById(R.id.tvLove);
 
-
-        textView.setText(editText.getText().toString());
-
-        String toastMessage = getResources().getString(R.string.toast_message);
-        Toast.makeText(getApplicationContext(), toastMessage, Toast.LENGTH_SHORT).show();
+        // Load user's name from SharedPreferences
+        SharedPreferences sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE);
+        String savedName = sharedPreferences.getString("userName", "");
+        if (!savedName.isEmpty()) {
+            editText.setText(savedName);
+        }
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // Save current value in SharedPreferences
+        SharedPreferences sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("userName", editText.getText().toString());
+        editor.apply();
+    }
+
+    // Handle the result from NameActivity
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1) {
+            if (resultCode == 0) {
+                // User wants to change their name
+                // Handle this scenario
+            } else if (resultCode == 1) {
+                // User is happy, close the app
+                finish();
+            }
+        }
+    }
 }

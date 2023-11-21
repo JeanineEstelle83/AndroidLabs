@@ -9,5 +9,10 @@
     <string name="press">Appuyez-moi</string>
     <string name="check">Cocher ici</string>
     <string name="toast_message"> L\'étiquette a été mise à jour </string>
+    <string name="welcome_message">Bienvenue %1$s!</string>
+    <string name="next_button_label">NEXT</string>
+    <string name="dont_call_me_label">Ne M\'APPELLE PAS COMME Ca</string>
+    <string name="thank_you_label">MERCI</string>
+
 
 </resources>

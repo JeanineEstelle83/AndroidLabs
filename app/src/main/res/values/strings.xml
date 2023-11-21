@@ -7,6 +7,13 @@
     <string name="press">Press me</string>
     <string name="check">Check this out!</string>
     <string name="toast_message">Label has been updated</string>
+    <string name="welcome_message">Welcome %1$s!</string>
+    <string name="next_button_label">NEXT</string>
+    <string name="dont_call_me_label">DON\'T CALL ME THAT</string>
+    <string name="thank_you_label">THANK YOU</string>
+
+
+
 
 
 </resources>
