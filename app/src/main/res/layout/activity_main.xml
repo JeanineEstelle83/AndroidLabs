@@ -21,18 +21,18 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:hint="Type here"
+            android:hint="@string/type_here_label"
             android:inputType="text" />
 
         <Switch
             android:id="@+id/aSwitch"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Urgent" />
+            android:text="@string/Urgent_label" />
         <Button
             android:id="@+id/button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Add" />
+            android:text="@string/add_label" />
     </LinearLayout>
 </LinearLayout>

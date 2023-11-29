@@ -11,6 +11,12 @@
     <string name="next_button_label">NEXT</string>
     <string name="dont_call_me_label">DON\'T CALL ME THAT</string>
     <string name="thank_you_label">THANK YOU</string>
+    <string name="add_label">Add</string>
+    <string name="type_here_label">Type here</string>
+    <string name="Urgent_label">Urgent</string>
+
+
+
 
 
 </resources>
