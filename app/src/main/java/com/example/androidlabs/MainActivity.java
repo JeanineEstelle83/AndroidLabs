@@ -1,267 +1,123 @@
-	package com.example.androidlabs;
+package com.example.androidlabs;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.app.AlertDialog;
-import android.content.ContentValues;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Color;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.BaseAdapter;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.Switch;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 public class MainActivity extends AppCompatActivity {
-    private EditText todoEditText;
-    private Button addButton;
-    private ListView todoListView;
-    private TodoListAdapter todoAdapter;
-    private List<TodoItem> todoList;
-    private MyOpener databaseHelper;
-
+    private ImageView catImageView;
+    private ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        todoEditText = findViewById(R.id.editText);
-        addButton = findViewById(R.id.button);
-        todoListView = findViewById(R.id.lvItems);
+        catImageView = findViewById(R.id.imageView);
+        progressBar = findViewById(R.id.progressBar);
 
-        // Initialize your todo list and adapter
-        todoList = new ArrayList<>();
-        todoAdapter = new TodoListAdapter(this, todoList);
-        todoListView.setAdapter(todoAdapter);
-        databaseHelper = new MyOpener(this);
+        CatImages catImagesTask = new CatImages();
+        catImagesTask.execute();
+    }
 
-        // Load saved todos from the database when the app opens
-        loadTodosFromDatabase();
+    private class CatImages extends AsyncTask<Void, Integer, Void> {
+        private Bitmap currentCatPicture;
 
-        addButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String todoText = todoEditText.getText().toString().trim();
-                boolean isUrgent =((Switch) findViewById(R.id.aSwitch)).isChecked(); /* Your logic to get the urgency state */;
+        @Override
+        protected Void doInBackground(Void... voids) {
+            while (!isCancelled()) {
+                try {
+                    URL url = new URL("https://cataas.com/cat?json=true");
+                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                    connection.setRequestMethod("GET");
+                    connection.connect();
 
-                if (!TextUtils.isEmpty(todoText)) {
-                    TodoItem newItem = new TodoItem(todoText, isUrgent);
+                    InputStream inputStream = connection.getInputStream();
+                    StringBuilder response = new StringBuilder();
+                    int data;
+                    while ((data = inputStream.read()) != -1) {
+                        response.append((char) data);
+                    }
+                    inputStream.close();
 
+                    JSONObject jsonObject = new JSONObject(response.toString());
+                    String catId = jsonObject.getString("id");
+                    String catImageUrl = jsonObject.getString("url");
 
-                    SQLiteDatabase db = databaseHelper.getWritableDatabase();
-                    ContentValues values = new ContentValues();
-                    values.put(MyOpener.COLUMN_TEXT, todoText);
-                    values.put(MyOpener.COLUMN_URGENCY, isUrgent ? 1 : 0);
-                    db.insert(MyOpener.TABLE_TODO, null, values);
-                    long newRowId = db.insert(MyOpener.TABLE_TODO, null, values);
-
-                    db.close();
-                    if (newRowId != -1) {
-                        // Data added successfully
-                        Toast.makeText(MainActivity.this, "Data added to the database", Toast.LENGTH_SHORT).show();
-                        todoList.add(newItem);
+                    File localFile = new File(getFilesDir(), catId + ".jpg");
+                    if (localFile.exists()) {
+                        currentCatPicture = BitmapFactory.decodeFile(localFile.getAbsolutePath());
                     } else {
-                        // Insert failed
-                        Toast.makeText(MainActivity.this, "Failed to add data to the database", Toast.LENGTH_SHORT).show();
+                        URL imageUrl = new URL(catImageUrl);
+                        HttpURLConnection imageConnection = (HttpURLConnection) imageUrl.openConnection();
+                        imageConnection.connect();
+                        InputStream imageInput = imageConnection.getInputStream();
+                        currentCatPicture = BitmapFactory.decodeStream(imageInput);
+
+                        FileOutputStream outputStream = new FileOutputStream(localFile);
+                        currentCatPicture.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+                        outputStream.flush();
+                        outputStream.close();
                     }
-                    todoAdapter.notifyDataSetChanged();
-                    todoEditText.getText().clear();
-                }
-            }
-        });
 
-        // Implement onItemLongClick listener for deletion
-        todoListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                builder.setTitle("Do you want to delete this?");
-                builder.setMessage("The selected row is: " + position);
-                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-
-                        // Remove from the database
-                        // Remove from the database
-                        SQLiteDatabase db = databaseHelper.getWritableDatabase();
-                        int deletedRows = db.delete(
-                                MyOpener.TABLE_TODO,
-                                MyOpener.COLUMN_TEXT + " = ?",
-                                new String[]{todoList.get(position).getText()}
-                        );
-                        db.close();
-
-                        if (deletedRows > 0) {
-                            // Data deleted successfully
-                            Toast.makeText(MainActivity.this, "Data deleted from the database", Toast.LENGTH_SHORT).show();
-                        } else {
-                            // Deletion failed
-                            Toast.makeText(MainActivity.this, "Failed to delete data from the database", Toast.LENGTH_SHORT).show();
-                        }
-                        todoList.remove(position);
-                        todoAdapter.notifyDataSetChanged();
-
-                    }
-                });
-                builder.setNegativeButton("No", null);
-                builder.create().show();
-                return true;
-            }
-
-        });
-    }
-
-    private void loadTodosFromDatabase() {
-        SQLiteDatabase db = databaseHelper.getReadableDatabase();
-        Cursor cursor = db.query(MyOpener.TABLE_TODO, null, null, null, null, null, null);
-
-        // Process the Cursor to load todos
-        if (cursor != null) {
-            int textColumnIndex = cursor.getColumnIndex(MyOpener.COLUMN_TEXT);
-            int urgencyColumnIndex = cursor.getColumnIndex(MyOpener.COLUMN_URGENCY);
-
-            while (cursor.moveToNext()) {
-                if (textColumnIndex != -1 && urgencyColumnIndex != -1) {
-                    String text = cursor.getString(textColumnIndex);
-                    int urgency = cursor.getInt(urgencyColumnIndex);
-
-                    TodoItem todo = new TodoItem(text, urgency == 1);
-                    todoList.add(todo);
-                } else {
-                    // Handle situation when column index is not found
-                    Log.e("TodoLoadError", "Column index not found");
-                }
-            }
-
-            cursor.close();
-            db.close();
-            todoAdapter.notifyDataSetChanged();
-        }
-    }
-    // TodoItem class to hold todo details
-    public static class TodoItem {
-        private String text;
-        private boolean isUrgent;
-
-        public TodoItem(String text, boolean isUrgent) {
-            this.text = text;
-            this.isUrgent = isUrgent;
-        }
-
-        public String getText() {
-            return text;
-        }
-        public void setText(String text) {
-            this.text = text;
-        }
-
-        public boolean isUrgent() {
-            return isUrgent;
-        }
-        public void setUrgent(boolean urgent) {
-            isUrgent = urgent;
-        }
-    }
-
-    // TodoListAdapter to manage ListView items
-    public class TodoListAdapter extends BaseAdapter {
-        private List<TodoItem> todoItemList;
-        private LayoutInflater inflater;
-
-        public TodoListAdapter(Context context, List<TodoItem> todoItemList) {
-            this.todoItemList = todoItemList;
-            inflater = LayoutInflater.from(context);
-        }
-
-        @Override
-        public int getCount() {
-            return todoItemList.size();
-        }
-
-        @Override
-        public Object getItem(int position) {
-            return todoItemList.get(position);
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return position;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            ViewHolder holder;
-            if (convertView == null) {
-                convertView = inflater.inflate(R.layout.todo, parent, false);
-                holder = new ViewHolder();
-                holder.textView = convertView.findViewById(R.id.TextView);
-                convertView.setTag(holder);
-            } else {
-                holder = (ViewHolder) convertView.getTag();
-            }
-
-            TodoItem todoItem = todoItemList.get(position);
-            holder.textView.setText(todoItem.getText());
-
-            if (todoItem.isUrgent()) {
-                convertView.setBackgroundColor(Color.RED);
-                holder.textView.setTextColor(Color.WHITE);
-            } else {
-                convertView.setBackgroundColor(Color.TRANSPARENT); // Reset background
-                holder.textView.setTextColor(Color.BLACK); // Reset text color
-            }
-
-            return convertView;
-        }
-
-        class ViewHolder {
-            TextView textView;
-        }
-
-
-    }
-    private void printCursor(Cursor cursor) {
-        if (cursor != null) {
-            Log.d("CursorInfo", "Database Version: " + databaseHelper.getReadableDatabase().getVersion());
-            Log.d("CursorInfo", "Number of columns in Cursor: " + cursor.getColumnCount());
-            String[] columnNames = cursor.getColumnNames();
-            Log.d("CursorInfo", "Column names: " + Arrays.toString(columnNames));
-            Log.d("CursorInfo", "Number of results in Cursor: " + cursor.getCount());
-
-            if (cursor.moveToFirst()) {
-                do {
-                    StringBuilder row = new StringBuilder();
-                    for (String columnName : columnNames) {
-                        int columnIndex = cursor.getColumnIndex(columnName);
-                        if (columnIndex > -1) {
-                            String columnValue = cursor.getString(columnIndex);
-                            row.append(columnName).append(": ").append(columnValue).append(", ");
-                        } else {
-                            row.append(columnName).append(": ").append("Column not found").append(", ");
-                            // Handle the situation where the column index is not found
+                    publishProgress(0);
+                    for (int i = 0; i < 100; i++) {
+                        try {
+                            publishProgress(i);
+                            Thread.sleep(30);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
                         }
                     }
-                    Log.d("CursorInfo", "Row: " + row.toString());
-                } while (cursor.moveToNext());
+                }  catch (IOException e) {
+                    // Handle IOException (specific to network operations)
+                    Log.e("CatImages", "IO Exception: " + e.getMessage());
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    // Handle JSONException (specific to JSON parsing)
+                    Log.e("CatImages", "JSON Exception: " + e.getMessage());
+                    e.printStackTrace();
+                } catch (Exception e) {
+                    // Catch any other generic exceptions
+                    Log.e("CatImages", "General Exception: " + e.getMessage());
+                    e.printStackTrace();
+                }
             }
+            return null;
+        }
+
+        @Override
+        protected void onProgressUpdate(Integer... values) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        if (currentCatPicture != null) {
+                            catImageView.setImageBitmap(currentCatPicture);
+                        }
+                        progressBar.setProgress(values[0]);
+                    } catch (Exception e) {
+                        Log.e("CatImages", "Error in onProgressUpdate: " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                }
+            });
         }
     }
 }
-

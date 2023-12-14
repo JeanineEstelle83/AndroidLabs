@@ -2,6 +2,7 @@
 
 
 <resources>
+    <string name="app_name">AndroidLabs</string>
     <string name="hello_world">Bonjour le monde</string>
     <string name="button_text">Je suis un bouton</string>
     <string name="love">J\'aime android</string>
@@ -16,7 +17,7 @@
     <string name="add_label">Ajouter</string>
     <string name="type_here_label">Ecrivez ici</string>
     <string name="Urgent_label">Urgent</string>
-
+    <string name="cat_image_description">Descritpion du chat</string>
 
 
 </resources>

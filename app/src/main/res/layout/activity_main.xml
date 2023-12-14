@@ -1,38 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity"
-    android:orientation="vertical">
+    android:background="#000000">
 
-    <ListView
-        android:id="@+id/lvItems"
+    <ImageView
+        android:id="@+id/imageView"
         android:layout_width="match_parent"
-        android:layout_height="384dp" />
-    <LinearLayout
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/flower_pic"
+        android:visibility="visible"/>
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        >
-
-        <EditText
-            android:id="@+id/editText"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:hint="@string/type_here_label"
-            android:inputType="text" />
-
-        <Switch
-            android:id="@+id/aSwitch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/Urgent_label" />
-        <Button
-            android:id="@+id/button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/add_label" />
-    </LinearLayout>
-</LinearLayout>
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="16dp"
+        android:indeterminate="false"
+        android:max="100"
+        android:progress="0"
+        android:visibility="visible"/>
+</RelativeLayout>

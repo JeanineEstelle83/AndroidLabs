@@ -14,9 +14,6 @@
     <string name="add_label">Add</string>
     <string name="type_here_label">Type here</string>
     <string name="Urgent_label">Urgent</string>
-
-
-
-
+    <string name="cat_image_description">Description of your cat image</string>
 
 </resources>
