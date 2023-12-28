@@ -15,5 +15,7 @@
     <string name="type_here_label">Type here</string>
     <string name="Urgent_label">Urgent</string>
     <string name="cat_image_description">Description of your cat image</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>
